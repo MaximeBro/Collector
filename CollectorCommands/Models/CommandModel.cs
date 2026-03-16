@@ -6,6 +6,12 @@ public class CommandModel
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; } = Guid.NewGuid();
+    
+    [JsonPropertyName("buyerId")]
+    public Guid BuyerId { get; set; } = Guid.NewGuid();
+    
+    [JsonPropertyName("sellerId")]
+    public Guid SellerId { get; set; } = Guid.NewGuid();
 
     [JsonPropertyName("total")]
     public double Total { get; set; } = 0D;

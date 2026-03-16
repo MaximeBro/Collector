@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace CollectorCommands.Models;
@@ -7,6 +8,9 @@ public class ArticleModel
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; } = Guid.NewGuid();
+    
+    [JsonPropertyName("userId")]
+    public Guid UserId { get; set; } = Guid.NewGuid();
 
     [MaxLength(50)]
     [JsonPropertyName("name")]
@@ -21,4 +25,10 @@ public class ArticleModel
 
     [JsonPropertyName("state")]
     public ArticleState State { get; set; } = ArticleState.Available;
+    
+    [NotMapped]
+    public Guid? CommandId { get; set; } = Guid.NewGuid();
+    
+    [NotMapped]
+    public CommandModel? Command { get; set; }
 }
