@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using CollectorCommands.Database;
+using CollectorCommands.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddDbContextFactory<CommandsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CommandsDb")));
+
+builder.Services.AddScoped<CommandsService>();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 var app = builder.Build();
 

@@ -27,8 +27,10 @@ public class ArticleModel
     public ArticleState State { get; set; } = ArticleState.Available;
     
     [NotMapped]
+    [JsonIgnore]
     public Guid? CommandId { get; set; } = Guid.NewGuid();
     
     [NotMapped]
+    [JsonIgnore]
     public CommandModel? Command { get; set; }
 }
