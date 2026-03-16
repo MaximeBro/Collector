@@ -39,6 +39,28 @@ public class CommandsController : ControllerBase
         }
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById([FromRoute] Guid? id)
+    {
+        try
+        {
+            if (!id.HasValue || id.Equals(Guid.Empty)) return BadRequest();
+            
+            var command = await _service.GetByIdAsync(id.Value);
+            if (command == null) return NotFound();
+            
+            return Ok(command);
+        }
+        catch (Exception e)
+        {
+            return Problem(
+                statusCode: 500,
+                title: "Internal Server Error",
+                detail: $"Une erreur interne est survenue: {e.Message}"
+            );
+        }
+    }
+
     [HttpPost("")]
     public async Task<IActionResult> Create([FromBody] CommandModel? model)
     {
