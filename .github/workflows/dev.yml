@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1 - Récupérer le code (Checkout)
+      - name: 1 - Checkout
         uses: actions/checkout@v4
 
       - name: 2 - SDK .NET 10
