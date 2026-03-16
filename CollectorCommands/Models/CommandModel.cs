@@ -1,0 +1,21 @@
+﻿using System.Text.Json.Serialization;
+
+namespace CollectorCommands.Models;
+
+public class CommandModel
+{
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    [JsonPropertyName("total")]
+    public double Total { get; set; } = 0D;
+    
+    [JsonPropertyName("totalHt")]
+    public double TotalHt { get; set; } = 0D;
+    
+    [JsonPropertyName("state")]
+    public CommandState State { get; set; } = CommandState.Pending;
+
+    [JsonPropertyName("articles")]
+    public List<ArticleModel> Articles { get; set; } = [];
+}
