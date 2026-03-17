@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/dotnet/sdk:10.0
-
     steps:
       - uses: actions/checkout@v4
 
@@ -95,7 +94,6 @@ jobs:
   build:
     needs: [security-scan, sonarqube]
     runs-on: ubuntu-latest
-
     steps:
       - name: 1 - Checkout
         uses: actions/checkout@v4
@@ -131,46 +129,46 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: 2 - Récupération du build
-        uses: actions/download-artifact@v4
+      - name: 2 - Restore
+        run: dotnet restore
 
-      - name: 3 - Install system dependencies
-        run: sudo apt-get install -y libxml2 libc6
+      - name: 3 - Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
 
-      - name: 4 - Install coverage tools
+      - name: 4 - Collect coverage
         run: |
-          dotnet tool install --global dotnet-coverage
-          dotnet tool install --global dotnet-reportgenerator-globaltool
+          dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage-results
 
-      - name: 5 - Collect data
-        run: |
-          dotnet-coverage collect \
-            "dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --no-build --configuration Release" \
-            -f xml -o coverage.xml
+          dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage-results
 
-      - name: 6 - Generate results
+      - name: 5 - Generate results
         run: |
           reportgenerator \
-            -reports:coverage.xml \
+            -reports:"coverage-results/**/coverage.cobertura.xml" \
             -targetdir:coverage-report \
             -reporttypes:TextSummary \
             -assemblyfilters:"+CollectorCommands"
-          
+
           cat coverage-report/Summary.txt
 
-      - name: 7 - Checking result
+      - name: 6 - Checking result
         run: |
           COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | grep -oP '\d+\.\d+' | head -1)
           echo "Couverture : $COVERAGE%"
-          
+
           if (( $(echo "$COVERAGE < 80" | bc -l) )); then
             echo "❌ Couverture insuffisante : $COVERAGE% < 80% requis"
             exit 1
           fi
-          
           echo "✅ Couverture OK : $COVERAGE%"
 
-      - name: 8 - Github Actions summary
+      - name: 7 - GitHub Actions summary
         if: always()
         run: |
           COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | grep -oP '\d+\.\d+' | head -1)
@@ -185,7 +183,7 @@ jobs:
             echo "| Statut | ✅ OK |" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: 9 - Upload HTML report
+      - name: 8 - Upload HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
