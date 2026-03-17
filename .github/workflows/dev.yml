@@ -51,7 +51,6 @@ jobs:
           dotnet build
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
   
-  
   build-and-test:
     needs: sonarqube
     runs-on: ubuntu-latest
