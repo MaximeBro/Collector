@@ -77,12 +77,15 @@ jobs:
       - name: 4 - Build
         run: dotnet build --no-restore --configuration Release
 
-      # - name: 5 - Tests unitaires
-      #   run: dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --no-build --configuration Release --verbosity normal
+      - name: 4 - Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-binaries
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+          retention-days: 1
 
-      # - name: 6 - Tests d'intégration
-      #   run: dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
-        
   unit-test:
     needs: build
     runs-on: ubuntu-latest
@@ -96,8 +99,13 @@ jobs:
         with: 
           dotnet-version: '10.0.x'
 
-      - name: 3 - Tests unitaires
-        run: dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --configuration Release --verbosity normal
+      - name: 3 - Récupération du build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-binaries
+
+      - name: 4 - Tests unitaires
+        run: dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --no-build --configuration Release --verbosity normal
 
   integration-test:
     needs: build
@@ -112,12 +120,17 @@ jobs:
         with: 
           dotnet-version: '10.0.x'
 
-      - name: 5 - Tests d'intégration
-        run: dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj --configuration Release --verbosity normal
+      - name: 3 - Récupération du build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-binaries
+
+      - name: 4 - Tests d'intégration
+        run: dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
 
   deploy:
     needs: [build, unit-test, integration-test]
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    # if: startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions: 
       id-token: write #This is required for requesting the OIDC JWT Token
