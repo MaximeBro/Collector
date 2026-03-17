@@ -14,6 +14,40 @@ on:
   workflow_dispatch:      
 
 jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:10.0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 1 - Install Node.js
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+          apt-get update && apt-get install -y nodejs
+
+      - name: 2 - Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: 3 - Authentification Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk auth $SNYK_TOKEN
+
+      - name: 4 - Restore
+        run: dotnet restore
+
+      - name: 5 - Scan Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          snyk test \
+            --all-projects \
+            --severity-threshold=high \
+            --fail-on=all \
+            --sarif-output=$GITHUB_WORKSPACE
+
   sonarqube:
     runs-on: windows-latest
     steps:
@@ -59,7 +93,7 @@ jobs:
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
   
   build:
-    needs: sonarqube
+    needs: [security-scan, sonarqube]
     runs-on: ubuntu-latest
 
     steps:
@@ -77,7 +111,7 @@ jobs:
       - name: 4 - Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: 4 - Upload Build Artifacts
+      - name: 5 - Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-binaries
