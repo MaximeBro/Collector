@@ -1,0 +1,80 @@
+﻿name: Dev CI Collector
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  sonarqube:
+    runs-on: windows-latest
+    steps:
+      - name: Set up JDK 17 # Nécessaire pour sonarqube
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          
+      - name: Cache SonarQube Cloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+          
+      - name: Cache SonarQube Cloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+          
+      - name: Install SonarQube Cloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
+          
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"MaximeBro_Collector" /o:"maximebro" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet build
+          ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+  
+  
+  build-and-test:
+    needs: sonarqube
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1 - Checkout
+        uses: actions/checkout@v4
+
+      - name: 2 - SDK .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 3 - Restore des packages
+        run: dotnet restore
+
+      - name: 4 - Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: 5 - Tests unitaires
+        run: dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: 6 - Tests d'intégration
+        run: dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
+        
+        
