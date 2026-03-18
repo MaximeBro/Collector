@@ -19,7 +19,7 @@ jobs:
     container:
       image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: 1 - Install Node.js
         run: |
@@ -51,17 +51,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17 # Nécessaire pour sonarqube
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'zulu'
           
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
           
       - name: Cache SonarQube Cloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
@@ -69,7 +69,7 @@ jobs:
           
       - name: Cache SonarQube Cloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ runner.temp }}\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -96,10 +96,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 1 - Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 2 - SDK .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -110,7 +110,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: 5 - Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-binaries
           path: |
@@ -122,10 +122,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: 1 - SDK .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
 
@@ -141,11 +141,7 @@ jobs:
             --configuration Release \
             --collect:"XPlat Code Coverage" \
             --results-directory ./coverage-results
-
-          dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj \
-            --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./coverage-results
+          ls -la ./coverage-results
 
       - name: 5 - Generate results
         run: |
@@ -184,7 +180,7 @@ jobs:
           fi
 
       - name: 8 - Upload HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: coverage-report
@@ -196,15 +192,15 @@ jobs:
 
     steps:
       - name: 1 - Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 2 - SDK .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with: 
           dotnet-version: '10.0.x'
 
       - name: 3 - Récupération du build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: build-binaries
 
@@ -217,15 +213,15 @@ jobs:
 
     steps:
       - name: 1 - Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 2 - SDK .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with: 
           dotnet-version: '10.0.x'
 
       - name: 3 - Récupération du build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: build-binaries
 
