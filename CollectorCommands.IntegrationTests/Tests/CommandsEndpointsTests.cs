@@ -1,9 +1,10 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Xunit.Abstractions;
 
 namespace CollectorCommands.IntegrationTests.Tests;
 
+[ExcludeFromCodeCoverage]
 public class CommandsEndpointsTests : IClassFixture<IntegratedWebApplicationFactory>
 {
     private readonly HttpClient _client;

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage"
+                     assemblyQualifiedName="Coverlet.Collector.DataCollection.CoverageCollector, Coverlet.Collector">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+
+          <!-- Exclure ton namespace OpenAPI -->
+          <Exclude>
+            [*]Microsoft.AspNetCore.OpenApi.Generated.*
+          </Exclude>
+
+          <!-- Exclure les migrations -->
+          <ExcludeByFile>
+            **/Migrations/*.cs
+          </ExcludeByFile>
+
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

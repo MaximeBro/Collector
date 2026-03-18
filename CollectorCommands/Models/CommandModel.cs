@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace CollectorCommands.Models;
 
+[ExcludeFromCodeCoverage]
 public class CommandModel
 {
     [JsonPropertyName("id")]

@@ -1,8 +1,10 @@
-﻿using CollectorCommands.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using CollectorCommands.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollectorCommands.Database;
 
+[ExcludeFromCodeCoverage]
 public class CommandsDbContext : DbContext
 {
     public DbSet<CommandModel> Commands { get; init; }

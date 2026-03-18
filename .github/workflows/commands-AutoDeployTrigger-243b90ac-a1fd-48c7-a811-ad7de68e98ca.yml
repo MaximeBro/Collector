@@ -141,7 +141,6 @@ jobs:
             --configuration Release \
             --collect:"XPlat Code Coverage" \
             --results-directory ./coverage-results
-          ls -la ./coverage-results
 
       - name: 5 - Generate results
         run: |
@@ -150,8 +149,6 @@ jobs:
             -targetdir:coverage-report \
             -reporttypes:TextSummary \
             -assemblyfilters:"+CollectorCommands"
-
-          cat coverage-report/Summary.txt
 
       - name: 6 - Checking result
         run: |

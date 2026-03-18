@@ -1,11 +1,13 @@
-﻿using CollectorCommands.Database;
+﻿using System.Diagnostics.CodeAnalysis;
+using CollectorCommands.Database;
 using CollectorCommands.Extensions;
 using CollectorCommands.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CollectorCommands.Services;
 
-public class CommandsService
+[ExcludeFromCodeCoverage]
+public class CommandsService : ICommandsService
 {
     private readonly IDbContextFactory<CommandsDbContext> _factory;
 
