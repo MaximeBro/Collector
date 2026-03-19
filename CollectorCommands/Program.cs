@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<CommandsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CommandsDb")));
 
-builder.Services.AddScoped<CommandsService>();
+builder.Services.AddScoped<ICommandsService, CommandsService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

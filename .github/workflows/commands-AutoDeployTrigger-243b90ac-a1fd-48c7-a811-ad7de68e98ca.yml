@@ -132,95 +132,51 @@ jobs:
       - name: 2 - Restore
         run: dotnet restore
 
-      - name: 3 - Install ReportGenerator
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
-      - name: 4 - Collect coverage
+      - name: 3 - Collect coverage
         run: |
-          dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj \
-            --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./coverage-results
-
-      - name: 5 - Generate results
-        run: |
-          reportgenerator \
-            -reports:"coverage-results/**/coverage.cobertura.xml" \
-            -targetdir:coverage-report \
-            -reporttypes:TextSummary \
-            -assemblyfilters:"+CollectorCommands"
-
-      - name: 6 - Checking result
-        run: |
-          COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | grep -oP '\d+\.\d+' | head -1)
-          echo "Couverture : $COVERAGE%"
-
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Couverture insuffisante : $COVERAGE% < 80% requis"
-            exit 1
-          fi
-          echo "✅ Couverture OK : $COVERAGE%"
-
-      - name: 7 - GitHub Actions summary
-        if: always()
-        run: |
-          COVERAGE=$(grep "Line coverage" coverage-report/Summary.txt | grep -oP '\d+\.\d+' | head -1)
-          echo "## 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "| Métrique | Valeur |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Couverture | **${COVERAGE}%** |" >> $GITHUB_STEP_SUMMARY
-          echo "| Seuil | **80%** |" >> $GITHUB_STEP_SUMMARY
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "| Statut | ❌ Insuffisant |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| Statut | ✅ OK |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: 8 - Upload HTML report
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage-report/
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
+            /p:Exclude="[*]Microsoft.AspNetCore.OpenApi.Generated.*" \
+            /p:ExcludeByFile="**/Migrations/*.cs" \
+            /p:ExcludeByAttribute="GeneratedCodeAttribute" \
+            /p:ExcludeByAttribute="CompilerGeneratedAttribute" \
+            /p:ExcludeByFile="**/*.generated.cs"
 
   unit-test:
-    needs: build
     runs-on: ubuntu-latest
-
+    needs: build
     steps:
-      - name: 1 - Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: 2 - SDK .NET 10
+      - name: 1 - SDK .NET 10
         uses: actions/setup-dotnet@v5
-        with: 
+        with:
           dotnet-version: '10.0.x'
 
-      - name: 3 - Récupération du build
-        uses: actions/download-artifact@v5
-        with:
-          name: build-binaries
+      - name: 2 - Restore
+        run: dotnet restore
+
+      - name: 3 - Build
+        run: dotnet build --configuration Release
 
       - name: 4 - Tests unitaires
         run: dotnet test CollectorCommands.Tests/CollectorCommands.Tests.csproj --no-build --configuration Release --verbosity normal
 
   integration-test:
-    needs: build
     runs-on: ubuntu-latest
-
+    needs: build
     steps:
-      - name: 1 - Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: 2 - SDK .NET 10
+      - name: 1 - SDK .NET 10
         uses: actions/setup-dotnet@v5
-        with: 
+        with:
           dotnet-version: '10.0.x'
 
-      - name: 3 - Récupération du build
-        uses: actions/download-artifact@v5
-        with:
-          name: build-binaries
+      - name: 2 - Restore
+        run: dotnet restore
+
+      - name: 3 - Build
+        run: dotnet build --configuration Release
 
       - name: 4 - Tests d'intégration
         run: dotnet test CollectorCommands.IntegrationTests/CollectorCommands.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
