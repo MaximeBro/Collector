@@ -11,6 +11,6 @@ public static class CommandsExtensions
     
     public static double GetTotal(this CommandModel @this)
     {
-        return @this.GetTotalHt(); // * 1.05D;
+        return @this.GetTotalHt() * 1.05D;
     }
 }
